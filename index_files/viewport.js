@@ -3,7 +3,7 @@ var ViewPort = function(walls){
 	this.walls =  walls;
 }
 
-ViewPort.prototype.offset = function(mPos, ctx, j){
+ViewPort.prototype.offset = function(mPos, ctx){
 	if (mPos[0] < this.coord[0] + this.walls[0]){
 		this.coord[0] -= this.coord[0] + this.walls[0] - mPos[0];
 	}else if (mPos[0] > this.coord[0] + this.walls[2]){
@@ -14,14 +14,6 @@ ViewPort.prototype.offset = function(mPos, ctx, j){
 		this.coord[1] -= this.coord[1] + this.walls[1] - mPos[1];
 	}else if(mPos[1] > this.coord[1] + this.walls[3]){
 		this.coord[1] += mPos[1] - (this.coord[1] + this.walls[3]);
-	}
-
-	if (mPos[1] > this.coord[1] + this.walls[1]){
-		if (j){
-			this.coord[1]+= 3;
-		}else{
-			this.coord[1] += 1
-		}
 	}
 
 	return [

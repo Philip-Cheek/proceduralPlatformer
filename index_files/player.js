@@ -62,16 +62,11 @@ Player.prototype.update = function(ctx, floor, offset){
 		'face': this.face
 	}, move = determineMovement(moveAttrs);
 	this.face = move.face;
-	var sprite = this.sprites.right,
-		fUpdate = checkCollision(this.mapPos, this.jump, floor, moveAttrs.keys, move);
-
+	var sprite = this.sprites.right;
+	checkCollision(this.mapPos, this.jump, floor, moveAttrs.keys, move);
 	ctx.drawImage(sprite, this.mapPos[0] - offset[0], window.innerHeight - (this.mapPos[1] - offset[1] + sprite.height * .5), sprite.width * .5, sprite.height * .5);
-	this.mapPos[0] += move.update[0] + fUpdate.u[0];
-	this.mapPos[1] += move.update[1] + fUpdate.u[1];
-
-	if ('i' in fUpdate){
-		return fUpdate.i;
-	}
+	this.mapPos[0] += move.update[0];
+	this.mapPos[1] += move.update[1];
 }
 
 
@@ -121,25 +116,15 @@ function determineJump(j, jPress){
 }
 
 function checkCollision(pos, j, floor, keys, move){
-	var cInfo = {'u': [0,0]}
-	if (floor && pos[1] + move.update[1] < floor.y && j.velocity <= 0){
-		pos[1] = floor.y;
+	if (floor && pos[1] + move.update[1] < floor && j.velocity <= 0){
+		pos[1] = floor;
 		stopJump(j, keys, move);
-		cInfo.i = floor.i;
 	}
 
 	if (!floor && j.velocity == j.rate ||
-		floor && pos[1] > floor.y && move.update[1] == 0){
-		console.log("GO");
+		floor && pos[1] > floor && move.update[1] == 0){
 		j.velocity = -j.gravity;
 		j.press.j = false;
-	}
-
-	if (!floor){
-		return cInfo;
-	}else{
-		cInfo.u = floor.u
-		return cInfo;
 	}
 }
 
