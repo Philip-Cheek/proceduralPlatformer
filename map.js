@@ -1,6 +1,7 @@
 var Map = function(floor){
 	this.floor = floor
 	this.platforms = [];
+	this.enemies = [];
 }
 
 Map.prototype.draw = function(ctx, offset){
@@ -10,6 +11,11 @@ Map.prototype.draw = function(ctx, offset){
 			break;
 		}
 		p.draw(ctx, offset);
+	}
+
+	for (var i = 0; i < this.enemies.length; i++){
+		var e = this.enemies[i];
+		e.draw(ctx, offset);
 	}
 }
 
@@ -38,6 +44,7 @@ Map.prototype.assemble = function(maxDiff, maxLen, start){
 				'type': type.n
 			}
 
+		this.ifEnemy(xDiff, yDiff, lastCoord);
 		lastCoord = [newCoord[0] + config.length, newCoord[1]];
 
 		if (type.n == 'move'){
@@ -51,27 +58,60 @@ Map.prototype.assemble = function(maxDiff, maxLen, start){
 	}
 }
 
+Map.prototype.ifEnemy = function(xDiff, yDiff, lastCoord){
+	if (Math.floor(Math.random() * 5) + 1 == 5){
+		xDiff *= (Math.random() * (12 - 3 + 1) + 3) * .1;
+		yDiff *= (Math.random() * (12 - 3 + 1) + 3) * .1;
+
+		this.enemies.push(new Enemy({
+			'coord': [xDiff + lastCoord[0], yDiff + lastCoord[1]],
+			'left': 'eLeft',
+			'right': 'eRight'
+		}));
+	}
+}
+
+Map.prototype.checkEnemy = function(coord, width, height){
+	for (var i = 0; i < this.enemies.length; i++){
+		var e = this.enemies[i],
+			collide = e.collide(coord, width, height);
+
+		if (collide){
+			return collide;
+		}
+	}
+}
 
 Map.prototype.findFloor = function(x, y, width){
+	var min = [];
 	for (var i = 0; i < this.platforms.length; i++){
 		var p = this.platforms[i];
-			if (y > p.coord[1] - p.thick){
-				var lLeft = x > p.coord[0],
-				lRight = x < p.coord[0] + p.length,
-				rLeft = x + width > p.coord[0],
-				rRight = x + width < p.coord[0] + p.length;
+		if (min.length == 0 || min[0] < x - window.innerWidth || min[1] > p.coord[1]){
+			console.log("this min");
+			min = [p.coord[0], p.coord[1]];
+		}
 
-				if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
-					var fInfo = {'y': p.coord[1], "u": [0,0]}
-					if (p.type == 'move'){
-						fInfo.u[0] += p.move.update[0],
-						fInfo.u[0] += p.move.update[1];
-					}
+		if (y > p.coord[1] - p.thick){
+			var lLeft = x > p.coord[0],
+			lRight = x < p.coord[0] + p.length,
+			rLeft = x + width > p.coord[0],
+			rRight = x + width < p.coord[0] + p.length;
 
-					fInfo.i = i;
-					return fInfo;
+			if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
+				var fInfo = {'y': p.coord[1], "u": [0,0]}
+				if (p.type == 'move'){
+					fInfo.u[0] += p.move.update[0],
+					fInfo.u[0] += p.move.update[1];
 				}
+
+				fInfo.i = i;
+				return fInfo;
 			}
+		}
+	}
+	console.log(min)
+	if (min.length > 0 && y < min[1] - 300){
+		return {'g': true};
 	}
 }
 

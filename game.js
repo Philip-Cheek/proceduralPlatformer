@@ -48,19 +48,31 @@ Game.prototype.start = function(){
 		var offset = self.viewPort.offset(self.player.mapPos, ctx, self.player.jump.velocity == self.player.jump.rate);
 		ctx.drawImage(background, self.bCoord[0] - offset[0], window.innerHeight - (self.bCoord[1] - offset[1]));
 		self.map.draw(ctx, offset);
-		var floor = self.map.findFloor(self.player.mapPos[0], self.player.mapPos[1], self.player.sprites.left.width * .5),
-			score = self.player.update(ctx, floor, offset);
 
-		self.updateScore(score);
-		ctx.beginPath();
-		ctx.strokeStyle = 'rgba(255,255,255,1)';
-		ctx.rect(window.innerWidth * .1, window.innerHeight * .2, window.innerWidth * .4, window.innerHeight * .6);
-		ctx.stroke();
-		ctx.closePath();
+		var collide = self.map.checkEnemy(self.player.mapPos, self.player.sprites.left.width * .5, self.player.sprites.left.height * .5);
+
+		if (collide && collide == 'defeat'){
+			self.player.forceJump();
+		}else if (collide && collide == 'kill'){
+			self.reset();
+		}
+
+		var floor = self.map.findFloor(self.player.mapPos[0], self.player.mapPos[1], self.player.sprites.left.width * .5);
+		if (floor && 'g' in floor && floor.g){
+			self.reset();
+		}else{
+			var score = self.player.update(ctx, floor, offset);
+			self.updateScore(score);
+		}
 	}
 
 	animate();
 };
+
+Game.prototype.reset = function(){
+	var p = this.map.platforms[this.score].coord;
+	this.player.mapPos = [p[0], p[1] + 600];
+}
 
 Game.prototype.updateScore =function updateScore(score){
 	if (score && score > this.score){

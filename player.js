@@ -54,6 +54,16 @@ Player.prototype.listenForMovement = function(){
 	});
 }
 
+Player.prototype.forceJump = function(){
+	this.keys.jump = true;
+	this.jump.velocity = this.jump.rate;
+}
+
+Player.prototype.forceFall = function(){
+	this.jump.velocity = -j.gravity;
+	this.jump.press.j = false;
+}
+
 Player.prototype.update = function(ctx, floor, offset){
 	var moveAttrs = {
 		'keys': this.keys,
