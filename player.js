@@ -55,8 +55,14 @@ Player.prototype.listenForMovement = function(){
 }
 
 Player.prototype.forceJump = function(){
+	var self = this;
+
 	this.keys.jump = true;
 	this.jump.velocity = this.jump.rate;
+
+	setTimeout(function(){
+		self.keys.jump = false;
+	}, 10);
 }
 
 Player.prototype.forceFall = function(){

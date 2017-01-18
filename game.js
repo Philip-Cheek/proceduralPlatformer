@@ -34,7 +34,7 @@ Game.prototype.start = function(){
 		ctx = self.context;
 
 	this.player.listenForMovement();
-	this.map.assemble([300, 400], 200, {
+	this.map.assemble([300, 400], 600, {
 		'coord': [300, 50],
 		'length': 100,
 		'thick': 15

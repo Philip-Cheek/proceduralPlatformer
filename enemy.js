@@ -51,7 +51,7 @@ Enemy.prototype.draw = function(ctx, offset){
 		this.coord[1] += this.speed[1];
 	}else{
 		this.coord[1] += this.fall;
-		this.fall *= 1.1;
+		this.fall *= 1.05;
 	}
 };
 
