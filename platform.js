@@ -3,7 +3,8 @@ var Platform = function(pConfig){
 	this.length = pConfig.length;
 	this.color = pConfig.color;
 	this.thick = pConfig.thick;
-	this.type = pConfig.type
+	this.type = pConfig.type;
+	this.tag = pConfig.tag;
 	if (this.type == "move"){
 		this.move = {
 			'update': [pConfig.speed, pConfig.speed],

@@ -8,9 +8,9 @@ var Player = function(sprites){
 	this.mapPos = [300, 400];
 	this.face = 'right';
 	this.jump = {
-		'velocity': 20,
+		'velocity': 16,
 		'gravity': .9,
-		'rate': 20,
+		'rate': 16,
 		'press': {
 			'j': false,
 			'r': false,
@@ -82,6 +82,7 @@ Player.prototype.update = function(ctx, floor, offset){
 		fUpdate = checkCollision(this.mapPos, this.jump, floor, moveAttrs.keys, move);
 
 	ctx.drawImage(sprite, this.mapPos[0] - offset[0], window.innerHeight - (this.mapPos[1] - offset[1] + sprite.height * .5), sprite.width * .5, sprite.height * .5);
+
 	this.mapPos[0] += move.update[0] + fUpdate.u[0];
 	this.mapPos[1] += move.update[1] + fUpdate.u[1];
 
@@ -151,7 +152,7 @@ function checkCollision(pos, j, floor, keys, move){
 		j.press.j = false;
 	}
 
-	if (!floor){
+	if (!floor || j.velocity != j.rate){
 		return cInfo;
 	}else{
 		cInfo.u = floor.u

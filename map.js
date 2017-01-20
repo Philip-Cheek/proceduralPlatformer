@@ -3,30 +3,91 @@ var Map = function(floor){
 	this.platforms = [];
 	this.enemies = [];
 	this.difficulty = 0;
+	this.obstacles = [];
 }
 
 Map.prototype.draw = function(ctx, offset){
+	var pPrune = [],
+		ePrune = [];
+		oPrune = [];
+
 	for (var i = 0; i < this.platforms.length; i++){
 		var p = this.platforms[i];
+
 		if (p.coord[0] > window.innerWidth + offset[0]){
 			break;
+		}else if (p.coord[0] < offset[0] - (window.innerWidth * 1.5)){
+			pPrune.push(i)
 		}
+
 		p.draw(ctx, offset);
 	}
 
 	for (var i = 0; i < this.enemies.length; i++){
 		var e = this.enemies[i];
+
+		if (e.coord[0] > offset[0] + (window.innerWidth * 1.2)){
+			break;
+		}else if (e.coord[1] < offset[1] - window.innerHeight ||
+			e.coord[0] < offset[0] - (window.innerWidth * 2)){
+			ePrune.push(i);
+		}
+
 		e.draw(ctx, offset);
+	}
+
+	for (var i = 0; i < this.obstacles.length; i++){
+		var o = this.obstacles[i];
+
+		if (o.coord[0] > offset[0] + (window.innerWidth * 1.1)){
+			break;
+		}else if (o.coord[0] < offset[1] - (window.innerHeight * 2)){
+			oPrune.push(i);
+		}
+
+		this.obstacles[i].draw(ctx, offset);
+	}
+
+
+	this.prune(pPrune, ePrune, oPrune);
+}
+
+Map.prototype.prune = function(pPrune, ePrune, oPrune){
+	var x = 0;
+
+	while (x < ePrune.length || x < pPrune.length || x < oPrune.length){
+
+		if (x < ePrune.length){
+			this.enemies.splice(ePrune[x], 1)
+		}
+
+		if (x < pPrune.length){
+			this.platforms.splice(pPrune[x], 1)
+		}
+
+		if (x < oPrune.length){
+			this.obstacles.splice(oPrune[x], 1)
+		}
+
+		x++;
 	}
 }
 
 Map.prototype.assemble = function(maxDiff, maxLen, start){
 	start.color = randomColor();
+	start.tag = 0;
+
 	this.platforms.push(new Platform(start));
 	var lastCoord = [
 		start.coord[0] + start.length,
 		start.coord[1]
 	]
+
+	this.obstacles.push(new SpinSpike(
+		[lastCoord[0] + 100, lastCoord[1] - 300],
+		'spike', 33)
+	);
+
 
 	for (var i = 0; i < 500; i ++){
 		var m = this.getMultipliers(),
@@ -39,10 +100,13 @@ Map.prototype.assemble = function(maxDiff, maxLen, start){
 				'color': randomColor(),
 				'length': length,
 				'thick': Math.random() * (20 - 4 + 1) + 4,
-				'type': type.n
+				'type': type.n,
+				'tag': i
 			}
 
 		this.ifEnemy(diff.x, diff.y, lastCoord);
+		this.ifObstacle(diff.x, diff.y, lastCoord);
+
 		lastCoord = [newCoord[0] + config.length, newCoord[1]];
 
 		if (type.n == 'move'){
@@ -53,7 +117,7 @@ Map.prototype.assemble = function(maxDiff, maxLen, start){
 		}
 
 		this.platforms.push(new Platform(config));
-		this.difficulty += .5;
+		this.difficulty += .2;
 	}
 }
 
@@ -75,6 +139,39 @@ Map.prototype.getMultipliers = function(){
 	return m;
 }
 
+Map.prototype.ifObstacle = function(xDiff, yDiff, lastCoord){
+	var d = this.difficulty
+
+	if (d > 5){
+		eChance = 3;
+	}else{
+		eChance = Math.floor(9 - d);
+	}
+
+	var chance = Math.floor(Math.random() * eChance) + 1 == eChance,
+		allow = xDiff > 100;
+
+	if (chance && allow){
+		var sMin = 15;
+
+		if (d < 10){
+			sMin += d;
+		}
+
+		var speed = Math.floor(Math.random() * (38 - sMin) + sMin),
+			xMax = (xDiff/2) * 1.1,
+			xMin = (xDiff/2) * .8,
+			yMin = window.innerHeight * .3,
+			yMax = window.innerHeight * .5,
+			coord = [
+				lastCoord[0] + Math.floor(Math.random() * (xMax - xMin) + xMin),
+				lastCoord[1] - Math.floor(Math.random() * (yMax - yMin) + yMin)
+			];
+
+		this.obstacles.push(new SpinSpike(coord, 'spike', speed));
+	}
+
+}
 Map.prototype.ifEnemy = function(xDiff, yDiff, lastCoord){
 	var d = this.difficulty,
 		eChance;
@@ -83,7 +180,6 @@ Map.prototype.ifEnemy = function(xDiff, yDiff, lastCoord){
 		eChance = 3;
 	}else{
 		eChance = Math.floor(8 - d);
-		console.log("d", eChance);
 	}
 
 	var isEnemy = Math.floor(Math.random() * eChance) + 1 == eChance;
@@ -106,8 +202,20 @@ Map.prototype.ifEnemy = function(xDiff, yDiff, lastCoord){
 	}
 }
 
+
+Map.prototype.checkCollide = function(coord, width, height){
+	for (var i = 0; i < this.obstacles.length; i++){
+		var obs = this.obstacles[i];
+		if (obs.collide(coord, width, height)){
+			return 'kill';
+		}
+	}
+
+	if (i == this.obstacles.length){
+		return this.checkEnemy(coord, width, height);
+	}
+}
 Map.prototype.checkEnemy = function(coord, width, height){
-	var prune = [];
 
 	for (var i = 0; i < this.enemies.length; i++){
 		var e = this.enemies[i],
@@ -116,17 +224,9 @@ Map.prototype.checkEnemy = function(coord, width, height){
 				break;
 			}
 
-			if (e.coord[1] < coord[1] - window.innerHeight){
-				prune.push(i);
-			}
-
 		if (collide){
 			return collide;
 		}
-	}
-
-	for (var x = 0; x < prune.length; x++){
-		this.enemies.splice(prune[x], 1);
 	}
 }
 
@@ -151,7 +251,7 @@ Map.prototype.findFloor = function(x, y, width){
 					fInfo.u[0] += p.move.update[1];
 				}
 
-				fInfo.i = i;
+				fInfo.i = p.tag;
 				return fInfo;
 			}
 		}
@@ -168,9 +268,9 @@ Map.prototype.getType = function(){
 		mChance;
 
 	if (d > 5){
-		mChance = 3;
+		mChance = 2;
 	}else{
-		mChance = 7 - d;
+		mChance = Math.floor(7 - d);
 	}
 
 	var isMove = Math.floor(Math.random() * mChance) + 1 == mChance;

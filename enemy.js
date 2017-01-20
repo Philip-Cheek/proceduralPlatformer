@@ -70,7 +70,7 @@ Enemy.prototype.collide = function(pCoord, w, h){
 		rRight = x + w < c[0] + sW;
 
 		if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
-			if (y > c[1] + sH * .9 && y < c[1] + sW * 1.03){
+			if (y > c[1] + sH * .85 && y < c[1] + sW * 1.03){
 				this.fallDown();
 				return 'defeat';
 			}else if (y + h < c[1] + sH && y + h > c[1] ||
