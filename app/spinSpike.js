@@ -16,8 +16,7 @@ SpinSpike.prototype.draw = function(ctx, offset){
 	var w = this.sprite.width/2,
 		h = this.sprite.height/2;
 
-	ctx.fillColor = "black";
-	ctx.fillRect(this.coord[0] - offset[0], window.innerHeight - (this.coord[1] + this.sprite.height - offset[1]), 20, 20)
+	
 	ctx.save();
 
 	ctx.translate(
@@ -53,9 +52,12 @@ SpinSpike.prototype.collide = function(pCoord, w, h){
 
 		if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
 			if (y + h < c[1] + sH && y + h > c[1] ||
-			 y > c[0] && y < c[1] + sH || y < c[1] && y + h > c[1] + sH){
-				return true
+			 y > c[1] && y < c[1] + sH || y < c[1] && y + h > c[1] + sH){
+			 	console.log("SPIN DEATH");
+				return {'status': true, 'info': 'kill'};
+
 			}
 		}
 
+	return {'status': false}
 }

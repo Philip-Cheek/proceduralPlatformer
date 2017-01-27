@@ -1,3 +1,4 @@
+
 var Platform = function(pConfig){
 	this.coord = pConfig.coord;
 	this.length = pConfig.length;
@@ -15,8 +16,8 @@ var Platform = function(pConfig){
 			]
 		}
 	}
-
 }
+
 
 Platform.prototype.draw = function(ctx, offset){
 	var x = this.coord[0], y = this.coord[1];
@@ -37,4 +38,34 @@ Platform.prototype.draw = function(ctx, offset){
 			}
 		}
 	}
+}
+
+Platform.prototype.collide = function(pCoord, w, h){
+	var c = [this.coord[0], this.coord[1]],
+		x = pCoord[0],
+		y = pCoord[1],
+		len = this.length;
+
+	if (y > c[1] - this.thick){
+		var lLeft = x > c[0],
+		lRight = x < c[0] + len,
+		rLeft = x + w > c[0],
+		rRight = x + w < c[0] + len;
+
+		if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
+			var fInfo = {'y': c[1], "u": [0,0]}
+			if (this.type == 'move'){
+				fInfo.u[0] += this.move.update[0],
+				fInfo.u[0] += this.move.update[1];
+			}
+
+			fInfo.i = this.tag;
+
+			return {'status': true, 'info': fInfo};
+		}
+	}
+
+
+	return {'status': false};
+	
 }

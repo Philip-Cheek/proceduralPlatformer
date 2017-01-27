@@ -61,8 +61,8 @@ Enemy.prototype.fallDown = function(){
 Enemy.prototype.collide = function(pCoord, w, h){
 	var sW = this.sprite.left.width,
 		sH = this.sprite.left.height,
-		c = this.coord,
-		x = pCoord[0],
+		c = this.coord, 
+		x = pCoord[0], 
 		y = pCoord[1],
 		lLeft = x > c[0],
 		lRight = x < c[0] + sW
@@ -70,14 +70,15 @@ Enemy.prototype.collide = function(pCoord, w, h){
 		rRight = x + w < c[0] + sW;
 
 		if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
-			if (y > c[1] + sH * .85 && y < c[1] + sW * 1.03){
+			if (y > c[1] + sH * .70 && y < c[1] + sW * 1.03){
 				this.fallDown();
-				return 'defeat';
+				return {'status': true, 'info': 'defeat'};
 			}else if (y + h < c[1] + sH && y + h > c[1] ||
-			 y > c[0] && y < c[1] + sH || y < c[1] && y + h > c[1] + sH){
-				return 'kill'
+			 y > c[1] && y < c[1] + sH || y < c[1] && y + h > c[1] + sH){
+				return {'status': true, 'info': 'kill'};
 			}
 		}
 
+	return {'status': false};
 }
 

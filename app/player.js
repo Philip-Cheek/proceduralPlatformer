@@ -1,12 +1,10 @@
 var Player = function(sprites){
-	this.sprites = {
-		'left': document.getElementById(sprites.left),
-		'right': document.getElementById(sprites.right)
-	}
-	this.width = this.sprites.left.width;
+	this.sprites = collectSprites(sprites);
+
 	this.speed = 6;
 	this.mapPos = [300, 400];
 	this.face = 'right';
+	this.prevFace;
 	this.jump = {
 		'velocity': 16,
 		'gravity': .9,
@@ -22,7 +20,8 @@ var Player = function(sprites){
 		'left': false,
 		'right': false,
 		'jump': false,
-		'boost': false
+		'boost': false,
+		'crouch': false
 	}
 }
 
@@ -30,6 +29,7 @@ Player.prototype.listenForMovement = function(){
 	var moveKeys = {
 		65: 'left',
 		68: 'right',
+		83: 'crouch',
 		16: 'boost',
 		32: 'jump'
 	}, keyDown, self = this;
@@ -75,13 +75,22 @@ Player.prototype.update = function(ctx, floor, offset){
 		'keys': this.keys,
 		'speed': this.speed,
 		'jump': this.jump,
-		'face': this.face
+		'face': this.face,
+		'prev': this.prevFace
 	}, move = determineMovement(moveAttrs);
-	this.face = move.face;
-	var sprite = this.sprites.right,
-		fUpdate = checkCollision(this.mapPos, this.jump, floor, moveAttrs.keys, move);
 
-	ctx.drawImage(sprite, this.mapPos[0] - offset[0], window.innerHeight - (this.mapPos[1] - offset[1] + sprite.height * .5), sprite.width * .5, sprite.height * .5);
+	this.face = move.face;
+	if (move.prev){
+		this.prevFace = move.prev;
+	}
+
+	var sprite = this.sprites[this.face],
+		fUpdate = checkCollision(this.mapPos, this.jump, floor, moveAttrs.keys, move),
+		x = this.mapPos[0] - offset[0],
+		y =  window.innerHeight - (this.mapPos[1] - offset[1] + sprite.height * .5),
+		spScale = [sprite.width * .5, sprite.height * .5];
+
+	ctx.drawImage(sprite, x, y, spScale[0], spScale[1]);
 
 	this.mapPos[0] += move.update[0] + fUpdate.u[0];
 	this.mapPos[1] += move.update[1] + fUpdate.u[1];
@@ -89,26 +98,64 @@ Player.prototype.update = function(ctx, floor, offset){
 	if ('i' in fUpdate){
 		return fUpdate.i;
 	}
-}
+};
 
+Player.prototype.dimen = function(){
+	var sprite = this.sprites[this.face];
+
+	return {
+		'w': sprite.width * .5,
+		'h': sprite.height * .5
+	}
+};
 
 function determineMovement(m){
-	var xVelocity = 0, face = m.face;
+	var xVelocity = 0, face = m.face,
+		yVelocity;
 
 	if (m.keys.left && !m.keys.right){
 		xVelocity -= m.speed;
-		face = 'left'
+		face = 'left';
 	}else if (m.keys.right){
-		xVelocity += m.speed
-		face = 'right'
+		xVelocity += m.speed;
+		face = 'right';
 	}
 
-	var yVelocity = determineJump(m.jump, m.keys.jump);
+	if (m.keys.crouch && m.jump.velocity == m.jump.rate){
+		face = 'crouch';
+		yVelocity = 0;
+	}else{
+		if (face == 'crouch'){
+			face = m.prev;
+		}
 
-	return {
+		yVelocity = determineJump(m.jump, m.keys.jump);
+
+		if (Math.abs(yVelocity) > 0){
+			if (face == 'right'){
+				face = 'jumpRight'
+			}else if (face == 'left'){
+				face = 'jumpLeft'
+			}
+		}else if (face == 'jumpRight' || face == 'jumpLeft'){
+			face = m.prev;
+		}
+
+	}
+
+	console.log('face', face)
+	var info = {
 		'update': [xVelocity, yVelocity],
 		'face': face
-	};
+	}
+
+	if (m.face != 'crouch' && m.face != 'jumpRight' &&
+		m.face != 'jumpLeft'){
+
+		info.prev = m.face;
+	}
+
+	return info;
 }
 
 function determineJump(j, jPress){
@@ -147,7 +194,6 @@ function checkCollision(pos, j, floor, keys, move){
 
 	if (!floor && j.velocity == j.rate ||
 		floor && pos[1] > floor.y && move.update[1] == 0){
-		console.log("GO");
 		j.velocity = -j.gravity;
 		j.press.j = false;
 	}
@@ -164,4 +210,14 @@ function stopJump(j, keys, move){
 	j.velocity = j.rate;
 	keys.jump = false;
 	move.update = [0, 0];
+}
+
+function collectSprites(sprites){
+	var sp = {};
+
+	for (var s in sprites){
+		sp[s] = document.getElementById(sprites[s]);
+	}
+
+	return sp;
 }
