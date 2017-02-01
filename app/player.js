@@ -110,51 +110,49 @@ Player.prototype.dimen = function(){
 };
 
 function determineMovement(m){
-	var xVelocity = 0, face = m.face,
-		yVelocity;
+	var info = {
+		'face': m.face,
+	}, xVelocity = 0, 
+	   yVelocity = 0;
 
 	if (m.keys.left && !m.keys.right){
 		xVelocity -= m.speed;
-		face = 'left';
+		info.face = 'left';
 	}else if (m.keys.right){
 		xVelocity += m.speed;
-		face = 'right';
+		info.face = 'right';
 	}
 
 	if (m.keys.crouch && m.jump.velocity == m.jump.rate){
-		face = 'crouch';
+		info.face = 'crouch';
 		yVelocity = 0;
 	}else{
-		if (face == 'crouch'){
-			face = m.prev;
+		if (info.face == 'crouch'){
+			info.face = m.prev;
 		}
 
 		yVelocity = determineJump(m.jump, m.keys.jump);
 
 		if (Math.abs(yVelocity) > 0){
-			if (face == 'right'){
-				face = 'jumpRight'
-			}else if (face == 'left'){
-				face = 'jumpLeft'
+			if (info.face == 'right'){
+				info.face = 'jumpRight';
+				info.prev = 'right';
+			}else if (info.face == 'left'){
+				info.face = 'jumpLeft';
+				info.prev = 'left';
 			}
-		}else if (face == 'jumpRight' || face == 'jumpLeft'){
-			face = m.prev;
+		}else if (info.face == 'jumpRight' || info.face == 'jumpLeft'){
+			info.face = m.prev;
 		}
 
 	}
 
-	console.log('face', face)
-	var info = {
-		'update': [xVelocity, yVelocity],
-		'face': face
-	}
-
 	if (m.face != 'crouch' && m.face != 'jumpRight' &&
 		m.face != 'jumpLeft'){
-
 		info.prev = m.face;
 	}
 
+	info.update = [xVelocity, yVelocity];
 	return info;
 }
 

@@ -53,7 +53,6 @@ SpinSpike.prototype.collide = function(pCoord, w, h){
 		if (lLeft && lRight || rLeft && rRight || !lLeft && !rRight){
 			if (y + h < c[1] + sH && y + h > c[1] ||
 			 y > c[1] && y < c[1] + sH || y < c[1] && y + h > c[1] + sH){
-			 	console.log("SPIN DEATH");
 				return {'status': true, 'info': 'kill'};
 
 			}

@@ -27,7 +27,7 @@ ViewPort.prototype.adjustUp = function(mPos, j){
 		if (j && this.coord[1] + 3 <= mPos[1]){
 			this.coord[1]+= 3;
 		}else if (this.coord[1] + 1 <= mPos[1]){
-			this.coord[1] += 1
+			this.coord[1] += 1;
 		}
 	}
 }

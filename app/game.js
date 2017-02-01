@@ -21,6 +21,10 @@ var Game = function(canvasID, background){
 	this.background = new Background('cloud');
 	this.score = 0;
 	this.healthBar = new HealthBar('assets/heart.png');
+	this.menu = new Menu({
+		'start': 'tutorial',
+		'button': 'close'
+	})
 }
 
 Game.prototype.init = function(){
@@ -34,6 +38,7 @@ Game.prototype.start = function(){
 		ctx = self.context;
 
 	this.player.listenForMovement();
+	this.menu.showStart();
 	this.map.assemble([120, 190], 300, {
 		'coord': [300, 50],
 		'length': 100,
@@ -44,13 +49,12 @@ Game.prototype.start = function(){
 	function animate(){
 		window.requestAnimFrame(animate);
 		var img = self.background;
-
 		ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
 		var offset = self.viewPort.offset(self.player.mapPos, ctx, self.player.jump.velocity == self.player.jump.rate);
 		self.background.draw(ctx, offset, self.scale);
 		self.map.draw(ctx, offset, self.scale);
 		self.determineUpdate(ctx, offset, self.scale);
-	}
+	};
 
 	animate();
 };

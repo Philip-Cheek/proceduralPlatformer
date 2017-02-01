@@ -2,6 +2,7 @@
 	<head>
 		<link rel = 'stylesheet' type = 'text/css' href = 'resources/styles.css'>
 
+		<script src = 'app/menu.js'></script>
 		<script src = 'app/healthBar.js'></script>
 		<script src = 'app/heart.js'></script>
 		<script src = 'app/background.js'></script>
@@ -17,6 +18,30 @@
 	</head>
 	<body>
 		<canvas id = 'canvas'></canvas>
+
+		<div id = 'tutorial'>
+			<div id = 'top'>
+				<div id = 'a' class = 'k'>
+					<p>A</p>
+				</div>
+				<div id = 's' class = 'k'>
+					<p>S</p>
+				</div>
+				<div id = 'd' class = 'k'>
+					<p>D</p>
+				</div>
+			</div>
+			<div id = 'bottom'>
+				<p id = 'l'>Left</p>
+				<p id = 'c'>Crouch</p>
+				<p id = 'r'>Right</p>
+			</div>
+			<div id = 'space'>
+				<p>SPACE</p>
+				<p id = 'j'>Jump</p>
+			</div>
+			<button id = 'close'>GOT IT!</button>
+		</div>
 		<div id = 'hiddenAssets'>
 			<img id = 'jumpLeft' src = 'assets/jumpLeft.png'>
 			<img id = 'jumpRight' src = 'assets/jumpRight.png'>
